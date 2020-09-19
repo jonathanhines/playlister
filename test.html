@@ -1,0 +1,88 @@
+<div id="ytplayer"></div>
+<div id="console-log"></div>
+
+<script>
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/player_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+var i = 0;
+var videoId_arr = ['8onB7rPG4Pk', 'O57DyNMRGY8', 'aOtLCXM8Ox8', '-Yh2QGJBd2U'];
+var startSeconds_arr = [65,26,17, 41];
+var endSeconds_arr = [75,40,30, 60];
+
+// Replace the 'ytplayer' element with an <iframe> and
+// YouTube player after the API code downloads.
+var player;
+
+var playerConfig = {
+  height: '360',
+  width: '640',
+  videoId: videoId_arr[i],
+  playerVars: {
+    autoplay: 1, // Auto-play the video on load
+    controls: 1, // Show pause/play buttons in player
+    showinfo: 1, // Hide the video title
+    modestbranding: 0, // Hide the Youtube Logo
+    fs: 1, // Hide the full screen button
+    cc_load_policy: 0, // Hide closed captions
+    iv_load_policy: 3, // Hide the Video Annotations
+    start: startSeconds_arr[i],
+    end: endSeconds_arr[i],
+    autohide: 0, // Hide video controls when playing
+  },
+  events: {
+    'onStateChange': onStateChange
+  }
+};
+
+
+
+function onYouTubePlayerAPIReady() {
+	player = new YT.Player('ytplayer', playerConfig);
+}
+
+function onStateChange(state) {
+
+	var _video_url = state.target.getVideoUrl();
+	var _video_id = _video_url.split('v=')[1];
+	var _current_index = videoId_arr.indexOf(_video_id) +1; 
+    var _end_play_time = player.getCurrentTime();
+
+	var el = document.querySelector('#console-log');
+    var newEl = document.createElement('p');
+    var log_context = 'current_index: '+_current_index+' video_id: '+_video_id
+    
+  	
+    if (state.data === YT.PlayerState.ENDED && _end_play_time >= endSeconds_arr[i]) {
+		
+        newEl.innerHTML = log_context+' state: ENDED'+' end-play-time:'+_end_play_time;
+		el.insertBefore(newEl, el.childNodes[0] || null)
+        
+        console.log('State: ', _video_id, _current_index, 
+    				player.getCurrentTime(),  
+                    startSeconds_arr[i], 
+                    endSeconds_arr[i], 
+                    (endSeconds_arr[i] - startSeconds_arr[i]),
+                    state );
+
+		i++;
+		if(typeof videoId_arr[i] === 'undefined'){
+			i = 0;
+            return;
+        }
+        
+        player.loadVideoById({
+			videoId: videoId_arr[i],
+			startSeconds: startSeconds_arr[i],
+			endSeconds: endSeconds_arr[i]
+        });
+  }else{
+  	newEl.innerHTML = log_context+' state: '+state.data;
+	el.insertBefore(newEl, el.childNodes[0] || null)
+   
+	console.log('State: ', _video_id, _current_index, state );
+  }
+}
+</script>
