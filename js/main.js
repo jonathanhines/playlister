@@ -2,11 +2,14 @@ var source = "https://spreadsheets.google.com/feeds/cells/1SHlMvmClCuTVQCE8dqdjk
 
 var clips = [];
 var currentClipIndex = 0;
+var displayColumns = [
+    {key: "date", label: "Date"},
+    {key: "title", label: "Title"},
+    {key: "type", label: "Type"}
+];
 
 $(function() {
-    console.log("Calling jquery getJson"); // TEMP
     $.getJSON( source, function( data ) {
-        console.log(data); // TEMP
         getClips(data.feed.entry)
         buildClipsTable();
         loadYoutubePlayer();
@@ -27,6 +30,9 @@ function getClips(entries) {
                 case "VideoID":
                     headings[col] = "videoID";
                     break;
+                case "Date":
+                    headings[col] = "date";
+                    break;
                 case "Title":
                     headings[col] = "title";
                     break;
@@ -42,14 +48,20 @@ function getClips(entries) {
                 case "Number":
                     headings[col] = "number";
                     break;
+                default:
+                    headings[col] = "";
+                    break;
             }
         } else if (row > 1) {
             if (pRow !== row) {
                 // We have a new row, add an entry and sae the last one.
-                clips[row - 2] = {}
+                clips[row - 2] = {selected: true}
                 pRow = row;
             }
             const key = headings[col];
+            if (key === "") {
+                continue;
+            }
             let value = cell["$t"];
             switch(key) {
                 case "start":
@@ -61,7 +73,6 @@ function getClips(entries) {
             clips[row - 2][key] = value;
         }
     }
-    console.log(headings); // TEMP
     console.log(clips); // TEMP
 }
 function buildClipsTable() {
@@ -74,23 +85,58 @@ function buildClipsTable() {
 function generateTableHead(table, data) {
     let thead = table.createTHead();
     let row = thead.insertRow();
-    for (let key of data) {
+    let sTh = document.createElement("th");
+    let sText = document.createTextNode("Select");
+    sTh.appendChild(sText);
+    row.appendChild(sTh);
+    for (let column of displayColumns) {
         let th = document.createElement("th");
-        let text = document.createTextNode(key);
+        let text = document.createTextNode(column.label);
         th.appendChild(text);
         row.appendChild(th);
     }
+    let pTh = document.createElement("th");
+    let pText = document.createTextNode("Play");
+    pTh.appendChild(pText);
+    row.appendChild(pTh);
 }
 
 function generateTable(table, data) {
-    for (let element of data) {
+    data.forEach( (clip, i) => {
         let row = table.insertRow();
-        for (key in element) {
+        let sCell = row.insertCell();
+        var checkbox = document.createElement("input");
+        checkbox.setAttribute("type", "checkbox");
+        checkbox.id="video-"+i;
+        checkbox.className = "clip-checkbox";
+        checkbox.addEventListener ("click", function(ev) {
+            console.log(ev); // TEMP
+            updateSelectedClips()
+        });
+        checkbox.checked = clip.selected;
+        sCell.appendChild(checkbox);
+        for (let column of displayColumns) {
             let cell = row.insertCell();
-            let text = document.createTextNode(element[key]);
+            let text = document.createTextNode(clip[column.key]);
             cell.appendChild(text);
         }
-    }
+        let pCell = row.insertCell();
+        var button = document.createElement("button");
+        button.type = "button";
+        button.innerHTML = "Play";
+        button.addEventListener ("click", function() {
+            currentClipIndex = i;
+            loadCurrentVideo();
+        });
+        pCell.appendChild(button);
+    });
+}
+
+function updateSelectedClips() {
+    $(".clip-checkbox").each((i, checkbox) => {
+        clips[i].selected = checkbox.checked
+    })
+    console.log(clips); // TEMP
 }
 
 function loadYoutubePlayer() {
