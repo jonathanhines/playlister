@@ -25,11 +25,14 @@
 
 <body>
   <div id="ytplayer"></div>
+  <div class="player-controls">
+    <button onclick="playVideo()">Play</button>
+    <button onclick="pauseVideo()">Pause</button>
+    <button onclick="previousVideo()">Previous</button>
+    <button onclick="nextVideo()">Next</button>
+  </div>
+  <div id="filters"></div>
   <table id="clipsTable"></table>
-  <button onclick="playVideo()">Play</button>
-  <button onclick="pauseVideo()">Pause</button>
-  <button onclick="previousVideo()">Previous</button>
-  <button onclick="nextVideo()">Next</button>
   <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/plugins.js"></script>
   <script src="js/main.js"></script>

@@ -1,6 +1,7 @@
 var source = "https://spreadsheets.google.com/feeds/cells/1SHlMvmClCuTVQCE8dqdjkXZ65gHEqj-z1ucylXmY2bI/1/public/full?alt=json"
 
 var clips = [];
+var types = [];
 var currentClipIndex = 0;
 var displayColumns = [
     {key: "date", label: "Date"},
@@ -55,7 +56,10 @@ function getClips(entries) {
         } else if (row > 1) {
             if (pRow !== row) {
                 // We have a new row, add an entry and sae the last one.
-                clips[row - 2] = {selected: true}
+                clips[row - 2] = {
+                    selected: true,
+                    visible: true,
+                }
                 pRow = row;
             }
             const key = headings[col];
@@ -73,13 +77,38 @@ function getClips(entries) {
             clips[row - 2][key] = value;
         }
     }
-    console.log(clips); // TEMP
+    typesMap = {};
+    clips.forEach((clip)=> {
+        if(!typesMap.hasOwnProperty(clip.type)) {
+            types.push(clip.type);
+            typesMap[clip.type] = 1;
+        }
+    });
 }
 function buildClipsTable() {
     let table = document.getElementById("clipsTable");
     let data = Object.keys(clips[0]);
     generateTableHead(table, data);
     generateTable(table, clips);
+    generateFilters()
+}
+function generateFilters() {
+    filterContainer = $("#filters");
+    types.forEach( (type) => {
+        var label = document.createElement("label");
+        text = document.createTextNode(capitalizeFirstLetter(type));
+        label.appendChild(text);
+        var checkbox = document.createElement("input");
+        checkbox.setAttribute("type", "checkbox");
+        checkbox.id = "filter-" + type;
+        checkbox.className = "filter-checkbox";
+        checkbox.addEventListener ("click", function(ev) {
+            updateFilteredClips()
+        });
+        checkbox.checked = true;
+        label.appendChild(checkbox);
+        filterContainer.append(label);
+    });
 }
 
 function generateTableHead(table, data) {
@@ -104,20 +133,25 @@ function generateTableHead(table, data) {
 function generateTable(table, data) {
     data.forEach( (clip, i) => {
         let row = table.insertRow();
+        row.id = "clipRow-" + i;
+        row.className = "type-" + clip.type;
         let sCell = row.insertCell();
         var checkbox = document.createElement("input");
         checkbox.setAttribute("type", "checkbox");
         checkbox.id="video-"+i;
         checkbox.className = "clip-checkbox";
         checkbox.addEventListener ("click", function(ev) {
-            console.log(ev); // TEMP
             updateSelectedClips()
         });
         checkbox.checked = clip.selected;
         sCell.appendChild(checkbox);
         for (let column of displayColumns) {
             let cell = row.insertCell();
-            let text = document.createTextNode(clip[column.key]);
+            let value = clip[column.key]
+            if(column.key === "type") {
+                value = capitalizeFirstLetter(value);
+            }
+            let text = document.createTextNode(value);
             cell.appendChild(text);
         }
         let pCell = row.insertCell();
@@ -136,7 +170,21 @@ function updateSelectedClips() {
     $(".clip-checkbox").each((i, checkbox) => {
         clips[i].selected = checkbox.checked
     })
-    console.log(clips); // TEMP
+}
+function updateFilteredClips() {
+    filterMap = {};
+    $(".filter-checkbox").each((i, checkbox) => {
+        type = checkbox.id.substr(7);
+        filterMap[type] = checkbox.checked;
+    });
+    clips.forEach((clip, i) => {
+        clip.visible = filterMap[clip.type];
+        if(clip.visible) {
+            $("#clipRow-" + i).removeClass("hidden");
+        } else {
+            $("#clipRow-" + i).addClass("hidden");
+        }
+    })
 }
 
 function loadYoutubePlayer() {
@@ -157,7 +205,7 @@ function onYouTubePlayerAPIReady() {
         width: '640',
         videoId: clip.videoID,
         playerVars: {
-        autoplay: 1, // Auto-play the video on load
+        autoplay: 0, // Auto-play the video on load
         controls: 1, // Show pause/play buttons in player
         showinfo: 1, // Hide the video title
         modestbranding: 1, // Hide the Youtube Logo
@@ -174,6 +222,7 @@ function onYouTubePlayerAPIReady() {
         }
     };
     player = new YT.Player('ytplayer', playerConfig);
+    markActiveClip();
 }
 
 function onStateChange(state) {
@@ -202,19 +251,55 @@ function pauseVideo() {
 }
 
 function previousVideo() {
-    currentClipIndex--;
+    let i = currentClipIndex;
+    while(i > 0) {
+        i--;
+        clip = clips[i];
+        if(clip.selected && clip.visible) {
+            currentClipIndex = i;
+            break;
+        }
+    }
     loadCurrentVideo();
 }
 
 function nextVideo() {
-    currentClipIndex++;
-    loadCurrentVideo();
+    let i = currentClipIndex;
+    let foundClip = false;
+    while(i < clips.length - 1) {
+        i++;
+        clip = clips[i];
+        if(clip.selected && clip.visible) {
+            currentClipIndex = i;
+            foundClip = true;
+            break;
+        }
+    }
+    if (!foundClip) {
+        // Look from the beginning
+        i = 0;
+        while(i < clips.length - 1) {
+            i++;
+            clip = clips[i];
+            if(clip.selected && clip.visible) {
+                currentClipIndex = i;
+                foundClip = true;
+                break;
+            }
+        }
+    }
+    if (foundClip) {
+        loadCurrentVideo();
+    } else {
+        pauseVideo();
+    }
 }
 
 function loadCurrentVideo() {
     clip = clips[currentClipIndex];
     if (typeof clip === 'undefined') {
         currentClipIndex = 0;
+        markActiveClip();
         return;
     }
 
@@ -223,4 +308,14 @@ function loadCurrentVideo() {
         startSeconds: clip.start,
         endSeconds: clip.end
     });
+    markActiveClip();
+}
+
+function markActiveClip() {
+    $("#clipsTable tr").removeClass("active");
+    $("#clipRow-" + currentClipIndex).addClass("active");
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

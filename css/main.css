@@ -261,3 +261,26 @@ textarea {
   }
 }
 
+#clipsTable {
+  border-collapse: collapse;
+}
+
+#clipsTable td,
+#clipsTable tr {
+  border-bottom: solid 1px #cccccc;
+  border-top: none 0 transparent;
+  border-right: none 0 transparent;
+  border-left: none 0 transparent;
+  padding: 5px 10px;
+}
+
+#clipsTable tr.active {
+  background-color: #b1aa6d;
+}
+
+#filters label {
+  margin-right: 10px;
+}
+#filters label input {
+  margin-left: 5px;
+}
