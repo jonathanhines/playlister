@@ -13,6 +13,8 @@ var displayDateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
 var displayDateLocale = "en-CA"
 
 var previouslySelectedIndex = -1;
+var shuffleActive = false;
+var shuffleOrder = [];
 
 $(function() {
     $.getJSON( source, function( data ) {
@@ -66,6 +68,7 @@ function getClips(entries) {
                     visible: true,
                 }
                 pRow = row;
+                shuffleOrder.push(row - 2);
             }
             const key = headings[col];
             if (key === "") {
@@ -92,10 +95,13 @@ function getClips(entries) {
             typesMap[clip.type] = 1;
         }
     });
+    // Get a shuffle order
+    shuffleOrder = shuffle(shuffleOrder);
 }
 function buildClipsTable() {
     let table = document.getElementById("clipsTable");
     let data = Object.keys(clips[0]);
+    updateShuffleActive();
     generateFilters();
     generateTableHead(table, data);
     generateTable(table, clips);
@@ -321,20 +327,36 @@ function previousVideo() {
 }
 
 function selectNextVideo() {
-    let i = currentClipIndex;
     let foundClip = false;
-    while(i < clips.length - 1) {
-        i++;
-        clip = clips[i];
-        if(clip.selected && clip.visible) {
-            currentClipIndex = i;
-            foundClip = true;
-            break;
+    if (shuffleActive) {
+        // Walk through the shuffle order
+        let shuffleI = shuffleOrder.indexOf(currentClipIndex);
+        while(shuffleI < shuffleOrder.length - 1) {
+            shuffleI++;
+            i = shuffleOrder[shuffleI];
+            clip = clips[i];
+            if(clip.selected && clip.visible) {
+                currentClipIndex = i;
+                foundClip = true;
+                break;
+            }
         }
-    }
-    if (!foundClip) {
-        // Look from the beginning
-        i = 0;
+        if (!foundClip) {
+            // Look from the beginning
+            shuffleI = -1;
+            while(shuffleI < shuffleOrder.length - 1) {
+                shuffleI++;
+                i = shuffleOrder[shuffleI];
+                clip = clips[i];
+                if(clip.selected && clip.visible) {
+                    currentClipIndex = i;
+                    foundClip = true;
+                    break;
+                }
+            }
+        }
+    } else {
+        let i = currentClipIndex;
         while(i < clips.length - 1) {
             i++;
             clip = clips[i];
@@ -342,6 +364,19 @@ function selectNextVideo() {
                 currentClipIndex = i;
                 foundClip = true;
                 break;
+            }
+        }
+        if (!foundClip) {
+            // Look from the beginning
+            i = -1;
+            while(i < clips.length - 1) {
+                i++;
+                clip = clips[i];
+                if(clip.selected && clip.visible) {
+                    currentClipIndex = i;
+                    foundClip = true;
+                    break;
+                }
             }
         }
     }
@@ -355,6 +390,10 @@ function nextVideo() {
     } else {
         pauseVideo();
     }
+}
+
+function updateShuffleActive() {
+    shuffleActive = $("#shuffle").prop("checked");
 }
 
 function loadCurrentVideo(playVideo) {
@@ -393,4 +432,24 @@ function capitalizeFirstLetter(string) {
 
 function isValidDate(d) {
     return d instanceof Date && !isNaN(d);
+}
+
+function shuffle(array) {
+    var curIndex = array.length,
+        temporaryValue, randIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== curIndex) {
+
+        // Pick a remaining element...
+        randIndex = Math.floor(Math.random() * curIndex);
+        curIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[curIndex];
+        array[curIndex] = array[randIndex];
+        array[randIndex] = temporaryValue;
+    }
+
+    return array;
 }
