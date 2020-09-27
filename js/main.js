@@ -12,6 +12,8 @@ var displayColumns = [
 var displayDateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
 var displayDateLocale = "en-CA"
 
+var previouslySelectedIndex = -1;
+
 $(function() {
     $.getJSON( source, function( data ) {
         getClips(data.feed.entry)
@@ -148,7 +150,7 @@ function generateTable(table, data) {
         checkbox.id="video-"+i;
         checkbox.className = "clip-checkbox";
         checkbox.addEventListener ("click", function(ev) {
-            updateSelectedClips()
+            handleClipCheckboxClick(ev, i)
         });
         checkbox.checked = clip.selected;
         sCell.appendChild(checkbox);
@@ -174,6 +176,24 @@ function generateTable(table, data) {
         });
         pCell.appendChild(button);
     });
+}
+
+function handleClipCheckboxClick(ev, selectedIndex) {
+    if (ev.shiftKey && previouslySelectedIndex >= 0) {
+        // Operate on all clips between the previous and current indices
+        var startI = selectedIndex;
+        var endI = previouslySelectedIndex;
+        if (selectedIndex > previouslySelectedIndex) {
+            startI = previouslySelectedIndex;
+            endI = selectedIndex;
+        }
+        const checked = $("#video-" + selectedIndex).prop("checked");
+        for(let i = startI; i <= endI; i++) {
+            $("#video-" + i).prop("checked", checked);
+        }
+    }
+    previouslySelectedIndex = selectedIndex;
+    updateSelectedClips()
 }
 
 function updateSelectedClips() {
