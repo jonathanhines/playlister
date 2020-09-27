@@ -170,7 +170,7 @@ function generateTable(table, data) {
         button.innerHTML = "Play";
         button.addEventListener ("click", function() {
             currentClipIndex = i;
-            loadCurrentVideo();
+            loadCurrentVideo(true);
         });
         pCell.appendChild(button);
     });
@@ -179,7 +179,8 @@ function generateTable(table, data) {
 function updateSelectedClips() {
     $(".clip-checkbox").each((i, checkbox) => {
         clips[i].selected = checkbox.checked
-    })
+    });
+    checkCurrentClipValid();
 }
 function updateFilteredClips() {
     filterMap = {};
@@ -208,16 +209,18 @@ function updateFilteredClips() {
             $("#clipRow-" + i).addClass("hidden");
         }
     });
+    checkCurrentClipValid();
+}
 
+function checkCurrentClipValid() {
     // Check if we have hidden the current video
-    if (!clips[currentClipIndex].visible) {
+    const clip = clips[currentClipIndex];
+    if (!clip.visible || !clip.selected) {
         // If we are currently playing it should play the next one, otherwise it should just select it to play
         const foundNextVideo = selectNextVideo();
         if (foundNextVideo) {
-            if (player.getPlayerState() === 1) {
-                loadCurrentVideo();
-            } else {
-                markActiveClip();
+            if (typeof(player) !== "undefined") {
+                loadCurrentVideo(player.getPlayerState() === 1);
             }
         }
     }
@@ -274,7 +277,7 @@ function onStateChange(state) {
 
 function playVideo() {
     if (loadedClipIndex !== currentClipIndex) {
-        loadCurrentVideo();
+        loadCurrentVideo(true);
     } else {
         player.playVideo();
     }
@@ -294,7 +297,7 @@ function previousVideo() {
             break;
         }
     }
-    loadCurrentVideo();
+    loadCurrentVideo(true);
 }
 
 function selectNextVideo() {
@@ -328,13 +331,13 @@ function selectNextVideo() {
 function nextVideo() {
     const foundNextVideo = selectNextVideo();
     if (foundNextVideo) {
-        loadCurrentVideo();
+        loadCurrentVideo(true);
     } else {
         pauseVideo();
     }
 }
 
-function loadCurrentVideo() {
+function loadCurrentVideo(playVideo) {
     clip = clips[currentClipIndex];
     if (typeof clip === 'undefined') {
         currentClipIndex = 0;
@@ -342,11 +345,19 @@ function loadCurrentVideo() {
         return;
     }
 
-    player.loadVideoById({
-        videoId: clip.videoID,
-        startSeconds: clip.start,
-        endSeconds: clip.end
-    });
+    if (playVideo) {
+        player.loadVideoById({
+            videoId: clip.videoID,
+            startSeconds: clip.start,
+            endSeconds: clip.end
+        });
+    } else {
+        player.cueVideoById({
+            videoId: clip.videoID,
+            startSeconds: clip.start,
+            endSeconds: clip.end
+        });
+    }
     loadedClipIndex = currentClipIndex;
     markActiveClip();
 }
