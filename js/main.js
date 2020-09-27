@@ -3,11 +3,14 @@ var source = "https://spreadsheets.google.com/feeds/cells/1SHlMvmClCuTVQCE8dqdjk
 var clips = [];
 var types = [];
 var currentClipIndex = 0;
+var loadedClipIndex = 0;
 var displayColumns = [
     {key: "date", label: "Date"},
     {key: "title", label: "Title"},
     {key: "type", label: "Type"}
 ];
+var displayDateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+var displayDateLocale = "en-CA"
 
 $(function() {
     $.getJSON( source, function( data ) {
@@ -73,6 +76,9 @@ function getClips(entries) {
                 case "number":
                     value = parseInt(value);
                     break;
+
+                case "date":
+                    value = new Date(value);
             }
             clips[row - 2][key] = value;
         }
@@ -88,12 +94,13 @@ function getClips(entries) {
 function buildClipsTable() {
     let table = document.getElementById("clipsTable");
     let data = Object.keys(clips[0]);
+    generateFilters();
     generateTableHead(table, data);
     generateTable(table, clips);
-    generateFilters()
+    updateFilteredClips();
 }
 function generateFilters() {
-    filterContainer = $("#filters");
+    typeFilterContainer = $("#type-filters");
     types.forEach( (type) => {
         var label = document.createElement("label");
         text = document.createTextNode(capitalizeFirstLetter(type));
@@ -107,7 +114,7 @@ function generateFilters() {
         });
         checkbox.checked = true;
         label.appendChild(checkbox);
-        filterContainer.append(label);
+        typeFilterContainer.append(label);
     });
 }
 
@@ -151,6 +158,9 @@ function generateTable(table, data) {
             if(column.key === "type") {
                 value = capitalizeFirstLetter(value);
             }
+            if(column.key === "date") {
+                value = value.toLocaleDateString(displayDateLocale, displayDateOptions);
+            }
             let text = document.createTextNode(value);
             cell.appendChild(text);
         }
@@ -177,14 +187,40 @@ function updateFilteredClips() {
         type = checkbox.id.substr(7);
         filterMap[type] = checkbox.checked;
     });
+    var startDate = new Date($("#start-date").val());
+    if (!isValidDate(startDate) ) {
+        startDate = new Date(1970, 01, 01)
+    }
+    var endDate = new Date($("#end-date").val());
+    if (!isValidDate(endDate) ) {
+        endDate = new Date(2099, 12, 31)
+    }
+
     clips.forEach((clip, i) => {
-        clip.visible = filterMap[clip.type];
+        if (clip.date < startDate || clip.date > endDate) {
+            clip.visible = false;
+        } else {
+            clip.visible = filterMap[clip.type];
+        }
         if(clip.visible) {
             $("#clipRow-" + i).removeClass("hidden");
         } else {
             $("#clipRow-" + i).addClass("hidden");
         }
-    })
+    });
+
+    // Check if we have hidden the current video
+    if (!clips[currentClipIndex].visible) {
+        // If we are currently playing it should play the next one, otherwise it should just select it to play
+        const foundNextVideo = selectNextVideo();
+        if (foundNextVideo) {
+            if (player.getPlayerState() === 1) {
+                loadCurrentVideo();
+            } else {
+                markActiveClip();
+            }
+        }
+    }
 }
 
 function loadYoutubePlayer() {
@@ -206,7 +242,7 @@ function onYouTubePlayerAPIReady() {
         videoId: clip.videoID,
         playerVars: {
         autoplay: 0, // Auto-play the video on load
-        controls: 1, // Show pause/play buttons in player
+        controls: 0, // Show pause/play buttons in player
         showinfo: 1, // Hide the video title
         modestbranding: 1, // Hide the Youtube Logo
         fs: 1, // Hide the full screen button
@@ -232,18 +268,16 @@ function onStateChange(state) {
     clip = clips[currentClipIndex];
 
     if (state.data === YT.PlayerState.ENDED && _end_play_time >= clip.end) {
-    // Video ended, play the next one
-        console.log('State: ', _video_id,
-            player.getCurrentTime(),
-            clip,
-            state
-        );
         nextVideo();
     }
 }
 
 function playVideo() {
-    player.playVideo();
+    if (loadedClipIndex !== currentClipIndex) {
+        loadCurrentVideo();
+    } else {
+        player.playVideo();
+    }
 }
 
 function pauseVideo() {
@@ -263,7 +297,7 @@ function previousVideo() {
     loadCurrentVideo();
 }
 
-function nextVideo() {
+function selectNextVideo() {
     let i = currentClipIndex;
     let foundClip = false;
     while(i < clips.length - 1) {
@@ -288,7 +322,12 @@ function nextVideo() {
             }
         }
     }
-    if (foundClip) {
+    return foundClip;
+}
+
+function nextVideo() {
+    const foundNextVideo = selectNextVideo();
+    if (foundNextVideo) {
         loadCurrentVideo();
     } else {
         pauseVideo();
@@ -308,6 +347,7 @@ function loadCurrentVideo() {
         startSeconds: clip.start,
         endSeconds: clip.end
     });
+    loadedClipIndex = currentClipIndex;
     markActiveClip();
 }
 
@@ -318,4 +358,8 @@ function markActiveClip() {
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function isValidDate(d) {
+    return d instanceof Date && !isNaN(d);
 }

@@ -31,7 +31,17 @@
     <button onclick="previousVideo()">Previous</button>
     <button onclick="nextVideo()">Next</button>
   </div>
-  <div id="filters"></div>
+  <div id="filters">
+    <div id="type-filters"></div>
+    <div id="date-filters">
+      <label>Start Date
+        <input id="start-date" type="date" onchange="updateFilteredClips();" />
+      </label>
+      <label>End Date
+        <input id="end-date" type="date" onchange="updateFilteredClips();" />
+      </label>
+    </div>
+  </div>
   <table id="clipsTable"></table>
   <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/plugins.js"></script>
