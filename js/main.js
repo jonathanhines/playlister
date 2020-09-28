@@ -135,6 +135,7 @@ function generateTableHead(table, data) {
     row.appendChild(sTh);
     for (let column of displayColumns) {
         let th = document.createElement("th");
+        th.className = "column-" + column.key;
         let text = document.createTextNode(column.label);
         th.appendChild(text);
         row.appendChild(th);
@@ -167,6 +168,7 @@ function generateTable(table, data) {
         sCell.appendChild(checkbox);
         for (let column of displayColumns) {
             let cell = row.insertCell();
+            cell.className = "column-" + column.key;
             let value = clip[column.key]
             if(column.key === "type") {
                 value = capitalizeFirstLetter(value);

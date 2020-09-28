@@ -24,46 +24,58 @@
 </head>
 
 <body>
-  <div id="ytplayer"></div>
-  <div class="player-controls">
-    <button class="control-button play-icon" onclick="playVideo()" title="Play"><span class="sr-only">Play</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-      <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
-      <path class="svg-fill" d="M339.19,229.14l-114-79.93c-16.88-11.84-40.1.24-40.1,20.86V329.93c0,20.62,23.22,32.7,40.1,20.86l114-79.93A25.47,25.47,0,0,0,339.19,229.14Z"/>
-    </svg></button>
-    <button class="control-button" onclick="pauseVideo()" title="Pause"><span class="sr-only">Pause</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-      <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
-      <rect class="svg-fill" x="158.09" y="144.19" width="63.83" height="211.62" rx="25.14"/>
-      <rect class="svg-fill" x="278.09" y="144.19" width="63.83" height="211.62" rx="25.14"/>
-    </svg></button>
-    <button class="control-button" onclick="previousVideo()" title="Previous"><span class="sr-only">Previous</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-      <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
-      <g>
-        <rect class="svg-fill" x="131.57" y="144.19" width="63.83" height="211.62" rx="25.14" transform="translate(326.97 500) rotate(180)"/>
-        <path class="svg-fill" d="M214.3,270.86l114,79.93a25.47,25.47,0,0,0,40.1-20.86V170.07a25.47,25.47,0,0,0-40.1-20.86l-114,79.93A25.47,25.47,0,0,0,214.3,270.86Z"/>
-      </g>
-    </svg></button>
-    <button class="control-button" onclick="nextVideo()" title="Next"><span class="sr-only">Next</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-      <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
-      <g>
-        <rect class="svg-fill" x="304.6" y="144.19" width="63.83" height="211.62" rx="25.14"/>
-        <path class="svg-fill" d="M285.7,229.14l-114-79.93a25.47,25.47,0,0,0-40.1,20.86V329.93a25.47,25.47,0,0,0,40.1,20.86l114-79.93A25.47,25.47,0,0,0,285.7,229.14Z"/>
-      </g>
-    </svg>
-    </button>
-    <label>Shuffle <input type="checkbox" id="shuffle" onclick="updateShuffleActive();"/>
-  </div>
-  <div id="filters">
-    <div id="type-filters"></div>
-    <div id="date-filters">
-      <label>Start Date
-        <input id="start-date" type="date" onchange="updateFilteredClips();" />
-      </label>
-      <label>End Date
-        <input id="end-date" type="date" onchange="updateFilteredClips();" />
-      </label>
+  <div id="content">
+    <div id="player">
+      <div class="videoMaxWidth">
+        <div class="videoWrapper">
+          <div id="ytplayer"></div>
+        </div>
+      </div>
+    </div>
+    <div id="controls">
+      <div class="player-controls">
+        <button class="control-button play-icon" onclick="playVideo()" title="Play"><span class="sr-only">Play</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+          <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
+          <path class="svg-fill" d="M339.19,229.14l-114-79.93c-16.88-11.84-40.1.24-40.1,20.86V329.93c0,20.62,23.22,32.7,40.1,20.86l114-79.93A25.47,25.47,0,0,0,339.19,229.14Z"/>
+        </svg></button>
+        <button class="control-button" onclick="pauseVideo()" title="Pause"><span class="sr-only">Pause</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+          <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
+          <rect class="svg-fill" x="158.09" y="144.19" width="63.83" height="211.62" rx="25.14"/>
+          <rect class="svg-fill" x="278.09" y="144.19" width="63.83" height="211.62" rx="25.14"/>
+        </svg></button>
+        <button class="control-button" onclick="previousVideo()" title="Previous"><span class="sr-only">Previous</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+          <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
+          <g>
+            <rect class="svg-fill" x="131.57" y="144.19" width="63.83" height="211.62" rx="25.14" transform="translate(326.97 500) rotate(180)"/>
+            <path class="svg-fill" d="M214.3,270.86l114,79.93a25.47,25.47,0,0,0,40.1-20.86V170.07a25.47,25.47,0,0,0-40.1-20.86l-114,79.93A25.47,25.47,0,0,0,214.3,270.86Z"/>
+          </g>
+        </svg></button>
+        <button class="control-button" onclick="nextVideo()" title="Next"><span class="sr-only">Next</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+          <path class="svg-fill icon-circle" d="M250,0C111.93,0,0,111.93,0,250S111.93,500,250,500,500,388.07,500,250,388.07,0,250,0Zm0,460C134,460,40,366,40,250S134,40,250,40s210,94,210,210S366,460,250,460Z"/>
+          <g>
+            <rect class="svg-fill" x="304.6" y="144.19" width="63.83" height="211.62" rx="25.14"/>
+            <path class="svg-fill" d="M285.7,229.14l-114-79.93a25.47,25.47,0,0,0-40.1,20.86V329.93a25.47,25.47,0,0,0,40.1,20.86l114-79.93A25.47,25.47,0,0,0,285.7,229.14Z"/>
+          </g>
+        </svg>
+        </button>
+        <label>Shuffle <input type="checkbox" id="shuffle" onclick="updateShuffleActive();"/>
+      </div>
+    </div>
+    <div id="clips">
+      <div id="filters">
+        <div id="type-filters"></div>
+        <div id="date-filters">
+          <label>Start Date
+            <input id="start-date" type="date" onchange="updateFilteredClips();" />
+          </label>
+          <label>End Date
+            <input id="end-date" type="date" onchange="updateFilteredClips();" />
+          </label>
+        </div>
+      </div>
+      <table id="clipsTable"></table>
     </div>
   </div>
-  <table id="clipsTable"></table>
   <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/plugins.js"></script>
   <script src="js/main.js"></script>
