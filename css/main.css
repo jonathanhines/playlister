@@ -15,6 +15,7 @@ html {
   color: #222;
   font-size: 1em;
   line-height: 1.4;
+  font-family: Verdana, Geneva, sans-serif;
 }
 
 /*
@@ -283,4 +284,30 @@ textarea {
 }
 #filters label input {
   margin-left: 5px;
+}
+
+.control-button {
+  padding: 10px;
+  border: none;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+#clipsTable td .control-button {
+  padding: 0;
+}
+
+.control-button:hover,
+.control-button:focus,
+.control-button:active {
+  opacity: 0.5;
+}
+.control-button svg {
+  max-height: 1.4em;
+}
+/* SVG Styling */
+.svg-fill {
+  fill: #000000;
 }

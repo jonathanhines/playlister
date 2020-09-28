@@ -146,10 +146,15 @@ function generateTableHead(table, data) {
 }
 
 function generateTable(table, data) {
+    mainPlayIcon = $(".player-controls .play-icon");
     data.forEach( (clip, i) => {
         let row = table.insertRow();
         row.id = "clipRow-" + i;
         row.className = "type-" + clip.type;
+        row.addEventListener ("dblclick", function(ev) {
+            currentClipIndex = i;
+            loadCurrentVideo(true);
+        });
         let sCell = row.insertCell();
         var checkbox = document.createElement("input");
         checkbox.setAttribute("type", "checkbox");
@@ -175,7 +180,11 @@ function generateTable(table, data) {
         let pCell = row.insertCell();
         var button = document.createElement("button");
         button.type = "button";
-        button.innerHTML = "Play";
+
+        button.innerHTML = "<span class='sr-only'>Play</span>";
+        button.title = "Play";
+        button.className = "control-button";
+        mainPlayIcon.clone().appendTo(button);
         button.addEventListener ("click", function() {
             currentClipIndex = i;
             loadCurrentVideo(true);
