@@ -319,7 +319,7 @@ textarea {
   opacity: 0.5;
 }
 .control-button svg {
-  max-height: 1.4em;
+  height: 1.4em;
 }
 
 .videoMaxWidth {
